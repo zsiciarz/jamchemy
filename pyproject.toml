@@ -1,0 +1,7 @@
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.mypy]
+plugins = "strawberry.ext.mypy_plugin"
+python_version = "3.10"

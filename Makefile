@@ -25,10 +25,11 @@ endif
 virtualenv_pip := $(virtualenv_path)/bin/pip
 virtualenv_python := $(virtualenv_path)/bin/python
 virtualenv_uvicorn := $(virtualenv_path)/bin/uvicorn
+virtualenv_precommit := $(virtualenv_path)/bin/pre-commit
 
 # --- targets ---
 
-.PHONY: help run
+.PHONY: help run check
 .DEFAULT_GOAL := help
 
 help: ## Show this help and exit
@@ -39,5 +40,8 @@ help: ## Show this help and exit
 	$(virtualenv_pip) install -r test_requirements.txt
 	touch $@
 
-run: .test_requirements.sentinel
+run: .test_requirements.sentinel ## Run ASGI server
 	$(virtualenv_uvicorn) --app-dir=src app:app
+
+check: .test_requirements.sentinel ## Run linters and style checkers
+	$(virtualenv_precommit) run --all-files
