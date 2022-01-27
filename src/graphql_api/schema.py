@@ -1,6 +1,9 @@
 import asyncio
 
 import strawberry
+from faker import Faker
+
+fake = Faker()
 
 
 @strawberry.type
@@ -9,12 +12,9 @@ class User:
     email: str
 
 
-me = User(name="Zbigniew", email="zbigniew@example.com")
-
-
 async def get_users():
     await asyncio.sleep(1.337)
-    return [me]
+    return [User(name=fake.name(), email=fake.email())]
 
 
 @strawberry.type
