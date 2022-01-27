@@ -1,4 +1,5 @@
 import asyncio
+from typing import AsyncGenerator
 
 import strawberry
 from faker import Faker
@@ -22,4 +23,13 @@ class Query:
     users: list[User] = strawberry.field(resolver=get_users)
 
 
-schema = strawberry.Schema(query=Query)
+@strawberry.type
+class Subscription:
+    @strawberry.subscription
+    async def user_registered(self) -> AsyncGenerator[User, None]:
+        while True:
+            await asyncio.sleep(1)
+            yield User(name=fake.name(), email=fake.email())
+
+
+schema = strawberry.Schema(query=Query, subscription=Subscription)
