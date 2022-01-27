@@ -1,0 +1,2 @@
+strawberry-graphql[asgi]==0.95.1
+uvicorn[standard]==0.17.0.post1
