@@ -41,7 +41,7 @@ help: ## Show this help and exit
 	touch $@
 
 run: .test_requirements.sentinel ## Run ASGI server
-	$(virtualenv_uvicorn) --app-dir=src app:app
+	$(virtualenv_uvicorn) --app-dir=src --reload app:app
 
 check: .test_requirements.sentinel ## Run linters and style checkers
 	$(virtualenv_precommit) run --all-files
