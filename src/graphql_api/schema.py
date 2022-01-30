@@ -3,7 +3,7 @@ from typing import AsyncGenerator
 
 import strawberry
 from faker import Faker
-from sqlalchemy import text
+from sqlalchemy import literal_column, select
 
 from models.base import engine
 
@@ -18,7 +18,8 @@ class User:
 
 async def get_users():
     async with engine.begin() as conn:
-        random_id = await conn.scalar(text("select abs(random() % 1000)"))
+        stmt = select(literal_column("abs(random()) % 1000").label("id"))
+        random_id = await conn.scalar(stmt)
     email = f"user{random_id}@{fake.domain_name()}"
     return [User(name=fake.name(), email=email)]
 
