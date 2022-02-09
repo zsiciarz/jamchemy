@@ -4,3 +4,5 @@ __pycache__
 *.sentinel
 .mypy_cache/
 *.db
+*.egg-info/
+dist/
