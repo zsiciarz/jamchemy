@@ -16,7 +16,7 @@ class User:
     email: str
 
 
-async def get_users():
+async def get_users() -> list[User]:
     async with engine.begin() as conn:
         stmt = select(literal_column("abs(random()) % 1000").label("id"))
         random_id = await conn.scalar(stmt)
