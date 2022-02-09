@@ -1,5 +1,5 @@
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 engine = create_async_engine(
     "sqlite+aiosqlite:///jamchemy.db",
@@ -8,3 +8,5 @@ engine = create_async_engine(
 )
 
 Base = declarative_base()
+
+Session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)

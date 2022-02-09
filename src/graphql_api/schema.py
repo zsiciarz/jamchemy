@@ -1,27 +1,34 @@
+from __future__ import annotations
+
 import asyncio
 from typing import AsyncGenerator
 
 import strawberry
 from faker import Faker
-from sqlalchemy import literal_column, select
+from sqlalchemy import select
 
-from models.base import engine
+from models.base import Session
+from models.user import User as UserModel
 
 fake = Faker()
 
 
 @strawberry.type
 class User:
-    name: str
+    name: str | None
     email: str
+
+    @classmethod
+    def from_model(cls, model: UserModel) -> User:
+        return cls(name=model.name, email=model.email)
 
 
 async def get_users() -> list[User]:
-    async with engine.begin() as conn:
-        stmt = select(literal_column("abs(random()) % 1000").label("id"))
-        random_id = await conn.scalar(stmt)
-    email = f"user{random_id}@{fake.domain_name()}"
-    return [User(name=fake.name(), email=email)]
+    async with Session() as session:
+        async with session.begin():
+            stmt = select(UserModel)  # no filtering... yet
+            result = await session.execute(stmt)
+            return result.scalars().all()
 
 
 @strawberry.type
