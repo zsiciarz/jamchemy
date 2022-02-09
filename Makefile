@@ -29,7 +29,7 @@ virtualenv_precommit := $(virtualenv_path)/bin/pre-commit
 
 # --- targets ---
 
-.PHONY: help run check
+.PHONY: help run check test
 .DEFAULT_GOAL := help
 
 help: ## Show this help and exit
@@ -45,3 +45,6 @@ run: .test_requirements.sentinel ## Run ASGI server
 
 check: .test_requirements.sentinel ## Run linters and style checkers
 	$(virtualenv_precommit) run --all-files
+
+test: .test_requirements.sentinel ## Run tests
+	$(virtualenv_python) -m pytest
