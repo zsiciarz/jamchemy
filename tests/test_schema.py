@@ -47,7 +47,7 @@ async def test_create_user(session: AsyncSession) -> None:
 @pytest.mark.asyncio
 async def test_create_user_email_already_exists(session: AsyncSession) -> None:
     async with session.begin():
-        user = User(name="Zed", email="zed@example.com")
+        user = User(name="Bob", email="bob@example.com")
         session.add(user)
     query = """mutation CreateUser($name: String!, $email: String!) {
         createUser(name: $name, email: $email) {
@@ -64,7 +64,7 @@ async def test_create_user_email_already_exists(session: AsyncSession) -> None:
     }
     """
     response = await schema.execute(
-        query, variable_values={"name": "Zedddd", "email": user.email}
+        query, variable_values={"name": "Bobbb", "email": user.email}
     )
     assert response.data is not None
     assert "user" not in response.data["createUser"]

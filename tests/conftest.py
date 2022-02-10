@@ -17,6 +17,7 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 
 @pytest_asyncio.fixture(scope="session")
 async def db_setup(event_loop: asyncio.AbstractEventLoop) -> AsyncGenerator[None, None]:
+    # TODO: use separate database to run tests against!
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         yield
@@ -25,5 +26,6 @@ async def db_setup(event_loop: asyncio.AbstractEventLoop) -> AsyncGenerator[None
 
 @pytest_asyncio.fixture
 async def session(db_setup: None) -> AsyncGenerator[AsyncSession, None]:
+    # TODO: clear database or roll back transaction between tests
     async with Session() as session:
         yield session
