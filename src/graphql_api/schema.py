@@ -37,6 +37,20 @@ class Query:
 
 
 @strawberry.type
+class Mutation:
+    # TODO: use https://strawberry.rocks/docs/guides/tools#merge_types to merge
+    # different groups of mutations
+    @strawberry.mutation
+    async def create_user(self, name: str, email: str) -> User:
+        async with Session() as session:
+            async with session.begin():
+                # TODO: what if email already exists?
+                user = UserModel(name=name, email=email)
+                session.add(user)
+                return User.from_model(user)
+
+
+@strawberry.type
 class Subscription:
     @strawberry.subscription
     async def user_registered(self) -> AsyncGenerator[User, None]:
@@ -45,4 +59,4 @@ class Subscription:
             yield User(name=fake.name(), email=fake.email())
 
 
-schema = strawberry.Schema(query=Query, subscription=Subscription)
+schema = strawberry.Schema(query=Query, mutation=Mutation, subscription=Subscription)
