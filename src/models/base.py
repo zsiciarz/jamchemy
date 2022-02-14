@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
+import config
+
 engine = create_async_engine(
-    "sqlite+aiosqlite:///jamchemy.db",
+    config.DATABASE_URI,
     echo=True,
     future=True,
 )
