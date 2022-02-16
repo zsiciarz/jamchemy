@@ -2,9 +2,18 @@ import strawberry
 from sqlalchemy import select
 
 from models.base import Session
+from models.idea import Idea as IdeaModel
 from models.user import User as UserModel
 
-from .types import User
+from .types import Idea, User
+
+
+async def get_ideas() -> list[Idea]:
+    async with Session() as session:
+        async with session.begin():
+            stmt = select(IdeaModel)
+            result = await session.execute(stmt)
+            return [Idea.from_model(idea) for idea in result.scalars().all()]
 
 
 async def get_users(name: str | None = None) -> list[User]:
@@ -19,4 +28,5 @@ async def get_users(name: str | None = None) -> list[User]:
 
 @strawberry.type
 class Query:
+    ideas: list[Idea] = strawberry.field(resolver=get_ideas)
     users: list[User] = strawberry.field(resolver=get_users)
