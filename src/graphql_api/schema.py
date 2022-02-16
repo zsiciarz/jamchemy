@@ -30,7 +30,7 @@ async def get_users() -> list[User]:
         async with session.begin():
             stmt = select(UserModel)  # no filtering... yet
             result = await session.execute(stmt)
-            return result.scalars().all()
+            return [User.from_model(u) for u in result.scalars().all()]
 
 
 @strawberry.type
