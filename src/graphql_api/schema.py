@@ -16,13 +16,18 @@ fake = Faker()
 
 @strawberry.type
 class User:
-    # TODO: expose ID
+    id: strawberry.ID
     name: str | None
     email: str
 
     @classmethod
     def from_model(cls, model: UserModel) -> User:
-        return cls(name=model.name, email=model.email)
+        return cls(
+            # TODO: global IDs
+            id=strawberry.ID(f"User:{model.id}"),
+            name=model.name,
+            email=model.email,
+        )
 
 
 async def get_users() -> list[User]:
@@ -74,9 +79,13 @@ class Mutation:
 class Subscription:
     @strawberry.subscription
     async def user_registered(self) -> AsyncGenerator[User, None]:
+        i = 10000
         while True:
             await asyncio.sleep(1)
-            yield User(name=fake.name(), email=fake.email())
+            yield User(
+                id=strawberry.ID(f"User:{i}"), name=fake.name(), email=fake.email()
+            )
+            i += 1
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation, subscription=Subscription)
