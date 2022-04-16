@@ -17,7 +17,7 @@ async def test_query_users(session: AsyncSession) -> None:
         }
     }
     """
-    response = await schema.execute(query)
+    response = await schema.execute(query, context_value={"session": session})
     assert response.data is not None
     assert response.data["users"][0]["name"] == user.name
 
@@ -38,7 +38,9 @@ async def test_create_user(session: AsyncSession) -> None:
     }
     """
     response = await schema.execute(
-        query, variable_values={"name": name, "email": email}
+        query,
+        variable_values={"name": name, "email": email},
+        context_value={"session": session},
     )
     assert response.data is not None
     assert response.data["createUser"]["user"]["name"] == name
@@ -64,7 +66,9 @@ async def test_create_user_email_already_exists(session: AsyncSession) -> None:
     }
     """
     response = await schema.execute(
-        query, variable_values={"name": "Bobbb", "email": user.email}
+        query,
+        variable_values={"name": "Bobbb", "email": user.email},
+        context_value={"session": session},
     )
     assert response.data is not None
     assert "user" not in response.data["createUser"]

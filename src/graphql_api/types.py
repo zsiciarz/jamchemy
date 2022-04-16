@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from typing import Any, TypeAlias
+
 import strawberry
 
 from models.idea import Idea as IdeaModel
 from models.user import User as UserModel
+
+Context: TypeAlias = dict[str, Any]
 
 
 @strawberry.type

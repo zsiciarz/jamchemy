@@ -1,10 +1,12 @@
+from typing import Any
+
 import strawberry
 from sqlalchemy.exc import IntegrityError
+from strawberry.types import Info
 
-from models.base import Session
 from models.user import User as UserModel
 
-from .types import User
+from .types import Context, User
 
 
 @strawberry.type
@@ -26,12 +28,16 @@ CreateUserResult = strawberry.union(
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def create_user(self, name: str, email: str) -> CreateUserResult:
+    async def create_user(
+        self, info: Info[Context, Any], name: str, email: str
+    ) -> CreateUserResult:
         try:
-            async with Session() as session:
-                async with session.begin():
-                    user = UserModel(name=name, email=email)
-                    session.add(user)
-                    return CreateUserSuccess(user=User.from_model(user))
+            session = info.context["session"]
+            async with session.begin():
+                user = UserModel(name=name, email=email)
+                session.add(user)
+            # TODO: enqueue user created event
+            print(f"User {user} created")
+            return CreateUserSuccess(user=User.from_model(user))
         except IntegrityError:
             return CreateUserError(cause="Email already exists")
