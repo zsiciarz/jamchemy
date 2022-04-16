@@ -4,6 +4,7 @@ import strawberry
 from sqlalchemy import select
 from strawberry.types import Info
 
+from models.base import transaction
 from models.idea import Idea as IdeaModel
 from models.user import User as UserModel
 
@@ -12,7 +13,7 @@ from .types import Context, Idea, User
 
 async def get_ideas(info: Info[Context, Any]) -> list[Idea]:
     session = info.context["session"]
-    async with session.begin():
+    async with transaction(session):
         stmt = select(IdeaModel)
         result = await session.execute(stmt)
         return [Idea.from_model(idea) for idea in result.scalars().all()]
@@ -20,7 +21,7 @@ async def get_ideas(info: Info[Context, Any]) -> list[Idea]:
 
 async def get_users(info: Info[Context, Any], name: str | None = None) -> list[User]:
     session = info.context["session"]
-    async with session.begin():
+    async with transaction(session):
         stmt = select(UserModel)
         if name:
             stmt = stmt.filter(UserModel.name.ilike(f"%{name}%"))

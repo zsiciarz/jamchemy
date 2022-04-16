@@ -4,6 +4,7 @@ import strawberry
 from sqlalchemy.exc import IntegrityError
 from strawberry.types import Info
 
+from models.base import transaction
 from models.user import User as UserModel
 
 from .types import Context, User
@@ -33,7 +34,7 @@ class Mutation:
     ) -> CreateUserResult:
         try:
             session = info.context["session"]
-            async with session.begin():
+            async with transaction(session):
                 user = UserModel(name=name, email=email)
                 session.add(user)
             # TODO: enqueue user created event
