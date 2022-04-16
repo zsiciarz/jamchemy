@@ -1,7 +1,7 @@
 aiosqlite==0.17.0
-alembic==1.7.6
-faker==11.3.0
-SQLAlchemy==1.4.31
+alembic==1.7.7
+faker==13.3.4
+SQLAlchemy==1.4.35
 sqlalchemy2-stubs==0.0.2a19
-strawberry-graphql[asgi]==0.95.1
-uvicorn[standard]==0.17.0.post1
+strawberry-graphql[asgi]==0.106.3
+uvicorn[standard]==0.17.6
