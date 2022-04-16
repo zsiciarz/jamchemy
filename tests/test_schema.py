@@ -1,3 +1,5 @@
+from asyncio import Queue
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,7 +8,7 @@ from models.user import User
 
 
 @pytest.mark.asyncio
-async def test_query_users(session: AsyncSession) -> None:
+async def test_query_users(session: AsyncSession, queue: Queue[int]) -> None:
     async with session.begin():
         user = User(name="Mike", email="mike@example.com")
         session.add(user)
@@ -17,13 +19,15 @@ async def test_query_users(session: AsyncSession) -> None:
         }
     }
     """
-    response = await schema.execute(query, context_value={"session": session})
+    response = await schema.execute(
+        query, context_value={"session": session, "queue": queue}
+    )
     assert response.data is not None
     assert response.data["users"][0]["name"] == user.name
 
 
 @pytest.mark.asyncio
-async def test_create_user(session: AsyncSession) -> None:
+async def test_create_user(session: AsyncSession, queue: Queue[int]) -> None:
     name = "Zed"
     email = "zed@example.com"
     query = """mutation CreateUser($name: String!, $email: String!) {
@@ -40,14 +44,16 @@ async def test_create_user(session: AsyncSession) -> None:
     response = await schema.execute(
         query,
         variable_values={"name": name, "email": email},
-        context_value={"session": session},
+        context_value={"session": session, "queue": queue},
     )
     assert response.data is not None
     assert response.data["createUser"]["user"]["name"] == name
 
 
 @pytest.mark.asyncio
-async def test_create_user_email_already_exists(session: AsyncSession) -> None:
+async def test_create_user_email_already_exists(
+    session: AsyncSession, queue: Queue[int]
+) -> None:
     async with session.begin():
         user = User(name="Bob", email="bob@example.com")
         session.add(user)
@@ -68,7 +74,7 @@ async def test_create_user_email_already_exists(session: AsyncSession) -> None:
     response = await schema.execute(
         query,
         variable_values={"name": "Bobbb", "email": user.email},
-        context_value={"session": session},
+        context_value={"session": session, "queue": queue},
     )
     assert response.data is not None
     assert "user" not in response.data["createUser"]

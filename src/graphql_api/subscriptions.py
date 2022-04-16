@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import asyncio
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
 import strawberry
 from faker import Faker
+from sqlalchemy import select
+from strawberry.types import Info
 
-from .types import User
+from models.user import User as UserModel
+
+from .types import Context, User
 
 fake = Faker()
 
@@ -14,11 +17,16 @@ fake = Faker()
 @strawberry.type
 class Subscription:
     @strawberry.subscription
-    async def user_registered(self) -> AsyncGenerator[User, None]:
-        i = 10000
+    async def user_registered(
+        self, info: Info[Context, Any]
+    ) -> AsyncGenerator[User, None]:
+        queue = info.context["queue"]
+        session = info.context["session"]
         while True:
-            await asyncio.sleep(1)
-            yield User(
-                id=strawberry.ID(f"User:{i}"), name=fake.name(), email=fake.email()
-            )
-            i += 1
+            user_id = await queue.get()
+            async with session.begin():
+                stmt = select(UserModel).where(UserModel.id == user_id)
+                result = await session.scalars(stmt)
+                user = result.first()
+            queue.task_done()
+            yield User.from_model(user)

@@ -37,8 +37,8 @@ class Mutation:
             async with transaction(session):
                 user = UserModel(name=name, email=email)
                 session.add(user)
-            # TODO: enqueue user created event
-            print(f"User {user} created")
+            queue = info.context["queue"]
+            await queue.put(user.id)
             return CreateUserSuccess(user=User.from_model(user))
         except IntegrityError:
             return CreateUserError(cause="Email already exists")

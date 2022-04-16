@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional, Union
 
 from starlette.requests import Request
@@ -9,6 +10,10 @@ from graphql_api.schema import schema
 from graphql_api.types import Context
 from models.base import Session
 
+# mutation puts User IDs on queue, subscription consumes the ID
+# note: this assumes running in a single process
+queue: asyncio.Queue[int] = asyncio.Queue()
+
 
 class JamchemyGraphQL(GraphQL):
     async def get_context(
@@ -19,7 +24,12 @@ class JamchemyGraphQL(GraphQL):
         async with Session() as session:
             # TODO: Should we call session.begin() here? Should the entire
             # request be atomic with regard to database transactions?
-            return {"request": request, "response": response, "session": session}
+            return {
+                "queue": queue,
+                "request": request,
+                "response": response,
+                "session": session,
+            }
 
 
 app = JamchemyGraphQL(schema)

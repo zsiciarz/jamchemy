@@ -28,3 +28,8 @@ async def session(db_setup: None) -> AsyncGenerator[AsyncSession, None]:
     # TODO: clear database or roll back transaction between tests
     async with Session() as session:
         yield session
+
+
+@pytest_asyncio.fixture
+async def queue() -> AsyncGenerator[asyncio.Queue[int], None]:
+    yield asyncio.Queue()
