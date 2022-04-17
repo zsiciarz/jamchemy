@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any
 
 import strawberry
@@ -38,7 +39,7 @@ class Mutation:
                 user = UserModel(name=name, email=email)
                 session.add(user)
             queue = info.context["queue"]
-            await queue.put(user.id)
+            asyncio.create_task(queue.put(user.id))
             return CreateUserSuccess(user=User.from_model(user))
         except IntegrityError:
             return CreateUserError(cause="Email already exists")
