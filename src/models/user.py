@@ -22,6 +22,11 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def create(self, email: str, name: str | None) -> User:
+        user = User(email=email, name=name)
+        self.session.add(user)
+        return user
+
     async def clear(self) -> None:
         stmt = delete(User)
         await self.session.execute(stmt)
