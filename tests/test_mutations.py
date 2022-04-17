@@ -1,15 +1,11 @@
-from asyncio import Queue
-
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from graphql_api.schema import schema
-from models.user import UserRepository
+from graphql_api.types import Context
 
 
 @pytest.mark.asyncio
-async def test_create_user(session: AsyncSession, queue: Queue[int]) -> None:
-    user_repo = UserRepository(session)
+async def test_create_user(execution_context: Context) -> None:
     name = "Zed"
     email = "zed@example.com"
     query = """mutation CreateUser($name: String!, $email: String!) {
@@ -26,10 +22,11 @@ async def test_create_user(session: AsyncSession, queue: Queue[int]) -> None:
     response = await schema.execute(
         query,
         variable_values={"name": name, "email": email},
-        context_value={"session": session, "queue": queue, "user_repo": user_repo},
+        context_value=execution_context,
     )
     assert response.data is not None
     assert response.data["createUser"]["user"]["name"] == name
+    queue = execution_context.queue
     assert not queue.empty()
     user_id = await queue.get()
     assert user_id is not None
@@ -37,10 +34,9 @@ async def test_create_user(session: AsyncSession, queue: Queue[int]) -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_user_email_already_exists(
-    session: AsyncSession, queue: Queue[int]
-) -> None:
-    user_repo = UserRepository(session)
+async def test_create_user_email_already_exists(execution_context: Context) -> None:
+    user_repo = execution_context.user_repo
+    session = execution_context.session
     async with session.begin():
         user = await user_repo.create(name="Bob", email="bob@example.com")
     query = """mutation CreateUser($name: String!, $email: String!) {
@@ -60,9 +56,10 @@ async def test_create_user_email_already_exists(
     response = await schema.execute(
         query,
         variable_values={"name": "Bobbb", "email": user.email},
-        context_value={"session": session, "queue": queue, "user_repo": user_repo},
+        context_value=execution_context,
     )
     assert response.data is not None
     assert "user" not in response.data["createUser"]
     assert response.data["createUser"]["cause"] == "Email already exists"
+    queue = execution_context.queue
     assert queue.empty()

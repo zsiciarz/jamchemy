@@ -1,13 +1,11 @@
 import asyncio
-from typing import Any
 
 import strawberry
 from sqlalchemy.exc import IntegrityError
-from strawberry.types import Info
 
 from models.base import transaction
 
-from .types import Context, User
+from .types import ExecutionInfo, User
 
 
 @strawberry.type
@@ -30,15 +28,14 @@ CreateUserResult = strawberry.union(
 class Mutation:
     @strawberry.mutation
     async def create_user(
-        self, info: Info[Context, Any], name: str, email: str
+        self, info: ExecutionInfo, name: str, email: str
     ) -> CreateUserResult:
         try:
-            session = info.context["session"]
-            user_repo = info.context["user_repo"]
-            async with transaction(session):
+            user_repo = info.context.user_repo
+            async with transaction(info.context.session):
                 user = await user_repo.create(name=name, email=email)
             # TODO: encapsulate publishing a "user created" event
-            queue = info.context["queue"]
+            queue = info.context.queue
             asyncio.create_task(queue.put(user.id))
             return CreateUserSuccess(user=User.from_model(user))
         # TODO: this should be a User-related exception

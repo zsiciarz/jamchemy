@@ -1,13 +1,33 @@
 from __future__ import annotations
 
+import asyncio
+import dataclasses
 from typing import Any, TypeAlias
 
 import strawberry
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
+from starlette.responses import Response
+from starlette.websockets import WebSocket
+from strawberry.types import Info
 
 from models.idea import Idea as IdeaModel
+from models.idea import IdeaRepository
 from models.user import User as UserModel
+from models.user import UserRepository
 
-Context: TypeAlias = dict[str, Any]
+
+@dataclasses.dataclass
+class Context:
+    request: Request | WebSocket
+    response: Response | None
+    queue: asyncio.Queue[int]
+    session: AsyncSession
+    idea_repo: IdeaRepository
+    user_repo: UserRepository
+
+
+ExecutionInfo: TypeAlias = Info[Context, Any]
 
 
 @strawberry.type
