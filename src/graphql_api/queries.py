@@ -1,32 +1,25 @@
 from typing import Any
 
 import strawberry
-from sqlalchemy import select
 from strawberry.types import Info
 
 from models.base import transaction
-from models.idea import Idea as IdeaModel
-from models.user import User as UserModel
 
 from .types import Context, Idea, User
 
 
 async def get_ideas(info: Info[Context, Any]) -> list[Idea]:
     session = info.context["session"]
+    idea_repo = info.context["idea_repo"]
     async with transaction(session):
-        stmt = select(IdeaModel)
-        result = await session.execute(stmt)
-        return [Idea.from_model(idea) for idea in result.scalars().all()]
+        return [Idea.from_model(idea) async for idea in idea_repo.list()]
 
 
 async def get_users(info: Info[Context, Any], name: str | None = None) -> list[User]:
     session = info.context["session"]
+    user_repo = info.context["user_repo"]
     async with transaction(session):
-        stmt = select(UserModel)
-        if name:
-            stmt = stmt.filter(UserModel.name.ilike(f"%{name}%"))
-        result = await session.execute(stmt)
-        return [User.from_model(u) for u in result.scalars().all()]
+        return [User.from_model(u) async for u in user_repo.list(name)]
 
 
 @strawberry.type

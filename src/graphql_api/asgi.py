@@ -9,6 +9,8 @@ from strawberry.schema import BaseSchema
 
 from graphql_api.types import Context
 from models.base import Session
+from models.idea import IdeaRepository
+from models.user import UserRepository
 
 
 class JamchemyGraphQL(GraphQL):
@@ -29,4 +31,6 @@ class JamchemyGraphQL(GraphQL):
                 "request": request,
                 "response": response,
                 "session": session,
+                "idea_repo": IdeaRepository(session),
+                "user_repo": UserRepository(session),
             }

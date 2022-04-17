@@ -6,6 +6,8 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.base import Base, Session, engine
+from models.idea import IdeaRepository
+from models.user import UserRepository
 
 
 @pytest.fixture(scope="session")
@@ -25,8 +27,10 @@ async def db_setup(event_loop: asyncio.AbstractEventLoop) -> AsyncGenerator[None
 
 @pytest_asyncio.fixture
 async def session(db_setup: None) -> AsyncGenerator[AsyncSession, None]:
-    # TODO: clear database or roll back transaction between tests
     async with Session() as session:
+        async with session.begin():
+            await IdeaRepository(session).clear()
+            await UserRepository(session).clear()
         yield session
 
 
