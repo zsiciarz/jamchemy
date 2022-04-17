@@ -27,6 +27,11 @@ class UserRepository:
         self.session.add(user)
         return user
 
+    async def get(self, user_id: int) -> User | None:
+        stmt = select(User).where(User.id == user_id)
+        result = await self.session.scalars(stmt)
+        return result.first()
+
     async def clear(self) -> None:
         stmt = delete(User)
         await self.session.execute(stmt)

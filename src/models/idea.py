@@ -25,6 +25,16 @@ class IdeaRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def create(self, author: User, summary: str, description: str | None) -> Idea:
+        idea = Idea(author=author, summary=summary, description=description)
+        self.session.add(idea)
+        return idea
+
+    async def get(self, idea_id: int) -> Idea | None:
+        stmt = select(Idea).where(Idea.id == idea_id)
+        result = await self.session.scalars(stmt)
+        return result.first()
+
     async def clear(self) -> None:
         stmt = delete(Idea)
         await self.session.execute(stmt)

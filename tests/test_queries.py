@@ -2,17 +2,18 @@ import pytest
 
 from graphql_api.schema import schema
 from graphql_api.types import Context
-from models.idea import Idea
 
 
 @pytest.mark.asyncio
 async def test_query_ideas(execution_context: Context) -> None:
+    idea_repo = execution_context.idea_repo
     user_repo = execution_context.user_repo
     session = execution_context.session
     async with session.begin():
         user = await user_repo.create(name="Mike", email="mike@example.com")
-        idea = Idea(author=user, summary="A cool idea", description="just kidding")
-        session.add(idea)
+        idea = await idea_repo.create(
+            author=user, summary="A cool idea", description="just kidding"
+        )
     query = """query Ideas {
         ideas {
             author {
