@@ -26,11 +26,6 @@ async def test_create_user(execution_context: Context) -> None:
     )
     assert response.data is not None
     assert response.data["createUser"]["user"]["name"] == name
-    queue = execution_context.queue
-    assert not queue.empty()
-    user_id = await queue.get()
-    assert user_id is not None
-    queue.task_done()
 
 
 @pytest.mark.asyncio
@@ -61,5 +56,3 @@ async def test_create_user_email_already_exists(execution_context: Context) -> N
     assert response.data is not None
     assert "user" not in response.data["createUser"]
     assert response.data["createUser"]["cause"] == "Email already exists"
-    queue = execution_context.queue
-    assert queue.empty()

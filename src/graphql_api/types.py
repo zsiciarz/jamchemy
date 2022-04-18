@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import dataclasses
 from typing import Any, TypeAlias
 
@@ -11,6 +10,7 @@ from starlette.responses import Response
 from starlette.websockets import WebSocket
 from strawberry.types import Info
 
+from events import EventManager
 from models.idea import Idea as IdeaModel
 from models.idea import IdeaRepository
 from models.user import User as UserModel
@@ -21,7 +21,7 @@ from models.user import UserRepository
 class Context:
     request: Request | WebSocket
     response: Response | None
-    queue: asyncio.Queue[int]
+    event_manager: EventManager
     session: AsyncSession
     idea_repo: IdeaRepository
     user_repo: UserRepository

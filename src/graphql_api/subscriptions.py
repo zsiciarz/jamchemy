@@ -4,6 +4,7 @@ from typing import AsyncGenerator
 
 import strawberry
 
+from events import UserCreatedEvent
 from models.base import transaction
 
 from .types import ExecutionInfo, User
@@ -13,16 +14,15 @@ from .types import ExecutionInfo, User
 class Subscription:
     @strawberry.subscription
     async def user_registered(self, info: ExecutionInfo) -> AsyncGenerator[User, None]:
-        queue = info.context.queue
+        event_manager = info.context.event_manager
         session = info.context.session
         user_repo = info.context.user_repo
-        while True:
-            user_id = await queue.get()
+        subscriber = await event_manager.subscribe(UserCreatedEvent)
+        async for event in subscriber.events():
             async with transaction(session):
-                user = await user_repo.get(user_id)
+                user = await user_repo.get(event.user_id)
                 if user is None:
                     # TODO: user has been deleted between emitting and consuming
                     # registered event
                     continue
-            queue.task_done()
             yield User.from_model(user)

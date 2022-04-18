@@ -1,23 +1,18 @@
-import asyncio
-from typing import Any
-
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.websockets import WebSocket
 from strawberry.asgi import GraphQL
-from strawberry.schema import BaseSchema
 
+from events import EventManager
 from graphql_api.types import Context
 from models.base import Session
 from models.idea import IdeaRepository
 from models.user import UserRepository
 
+event_manager = EventManager()
+
 
 class JamchemyGraphQL(GraphQL):
-    def __init__(self, schema: BaseSchema, queue: asyncio.Queue[int], **kwargs: Any):
-        super().__init__(schema, **kwargs)
-        self.queue = queue
-
     async def get_context(
         self,
         request: Request | WebSocket,
@@ -29,7 +24,7 @@ class JamchemyGraphQL(GraphQL):
             return Context(
                 request=request,
                 response=response,
-                queue=self.queue,
+                event_manager=event_manager,
                 session=session,
                 idea_repo=IdeaRepository(session),
                 user_repo=UserRepository(session),

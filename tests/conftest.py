@@ -7,6 +7,7 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
+from events import EventManager
 from graphql_api.types import Context
 from models.base import Base, Session, engine
 from models.idea import IdeaRepository
@@ -37,18 +38,13 @@ async def session(db_setup: None) -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-@pytest_asyncio.fixture
-async def queue() -> AsyncGenerator[asyncio.Queue[int], None]:
-    yield asyncio.Queue()
-
-
 @pytest.fixture
-def execution_context(session: AsyncSession, queue: asyncio.Queue[int]) -> Context:
+def execution_context(session: AsyncSession) -> Context:
     request = create_autospec(Request)
     return Context(
         request=request,
         response=None,
-        queue=queue,
+        event_manager=EventManager(),
         session=session,
         idea_repo=IdeaRepository(session),
         user_repo=UserRepository(session),
