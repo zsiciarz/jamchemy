@@ -4,4 +4,5 @@ faker==13.3.4
 SQLAlchemy==1.4.35
 sqlalchemy2-stubs==0.0.2a19
 strawberry-graphql[asgi]==0.106.3
+structlog==21.5.0
 uvicorn[standard]==0.17.6

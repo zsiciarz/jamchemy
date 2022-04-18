@@ -1,10 +1,11 @@
 import asyncio
 import dataclasses
-import logging
 from collections import defaultdict
 from typing import Any, AsyncGenerator, Generic, Type, TypeVar
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -24,7 +25,7 @@ class Subscriber(Generic[T]):
         while True:
             event = await self.queue.get()
             self.queue.task_done()
-            logger.info(f"Consumed event: {event}")
+            logger.debug("Consumed event", event=event)
             yield event
 
 
@@ -43,13 +44,13 @@ class EventManager:
         self.queues: dict[Type[Event], set[asyncio.Queue[Any]]] = defaultdict(set)
 
     async def subscribe(self, event_type: Type[T]) -> Subscriber[T]:
-        logger.info(f"Subscribing to events of type {event_type.__name__!r}")
+        logger.info("Subscribing to events", event_type=event_type.__name__)
         queue: asyncio.Queue[T] = asyncio.Queue()
         self.queues[event_type].add(queue)
         return Subscriber(queue)
 
     async def publish(self, event: Event) -> None:
         queues = self.queues[event.__class__]
-        logger.info(f"Publishing event: {event} to {len(queues)} subscribers")
+        logger.info("Publishing event", event=event, subscribers_count=len(queues))
         for queue in queues:
             asyncio.create_task(queue.put(event))
