@@ -1,8 +1,8 @@
 import strawberry
 from sqlalchemy.exc import IntegrityError
 
-from events import UserCreatedEvent
 from models.base import transaction
+from models.user import UserCreatedEvent
 
 from .types import ExecutionInfo, User
 

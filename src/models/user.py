@@ -1,8 +1,11 @@
+import dataclasses
 from typing import AsyncGenerator
 
 from sqlalchemy import Column, Integer, String, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped as M
+
+from events import Event
 
 from .base import Base
 
@@ -43,3 +46,8 @@ class UserRepository:
         result = await self.session.execute(stmt)
         for user in result.scalars().all():
             yield user
+
+
+@dataclasses.dataclass(frozen=True)
+class UserCreatedEvent(Event):
+    user_id: int

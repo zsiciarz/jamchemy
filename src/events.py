@@ -13,12 +13,6 @@ class Event:
     pass
 
 
-@dataclasses.dataclass(frozen=True)
-class UserCreatedEvent(Event):
-    # TODO: move somewhere closer to User domain
-    user_id: int
-
-
 T = TypeVar("T", bound=Event)
 
 
