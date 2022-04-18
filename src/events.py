@@ -35,6 +35,15 @@ class Subscriber(Generic[T]):
 
 
 class EventManager:
+    """
+    A simple, in-memory pub/sub application event dispatcher.
+
+    .. note:: This is a toy implementation which assumes a single process.
+       For a more production capable event system, see for example broadcaster:
+       https://github.com/encode/broadcaster or aioreactive:
+       https://github.com/dbrattli/aioreactive
+    """
+
     def __init__(self) -> None:
         # TODO: can we do better than Any here?
         self.queues: dict[Type[Event], set[asyncio.Queue[Any]]] = defaultdict(set)
