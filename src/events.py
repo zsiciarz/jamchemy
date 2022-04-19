@@ -25,7 +25,7 @@ class Subscriber(Generic[T]):
         while True:
             event = await self.queue.get()
             self.queue.task_done()
-            logger.debug("Consumed event", event=event)
+            logger.debug("Consumed event", event_instance=event)
             yield event
 
 
@@ -51,6 +51,8 @@ class EventManager:
 
     async def publish(self, event: Event) -> None:
         queues = self.queues[event.__class__]
-        logger.info("Publishing event", event=event, subscribers_count=len(queues))
+        logger.info(
+            "Publishing event", event_class=event, subscribers_count=len(queues)
+        )
         for queue in queues:
             asyncio.create_task(queue.put(event))
