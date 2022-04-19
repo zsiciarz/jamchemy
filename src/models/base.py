@@ -6,11 +6,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 import config
 
-engine = create_async_engine(
-    config.DATABASE_URI,
-    echo=True,
-    future=True,
-)
+engine = create_async_engine(config.DATABASE_URI, future=True)
 
 Base = declarative_base()
 

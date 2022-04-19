@@ -34,6 +34,7 @@ LOGGING = {
     },
     "loggers": {
         "events": {"handlers": ["console"], "level": "INFO"},
+        "sqlalchemy.engine": {"handlers": ["console"], "level": "INFO"},
         "uvicorn": {"handlers": ["console"], "level": "WARNING"},
     },
 }
